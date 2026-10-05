@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "web-security-checker"
+version = "0.1.0"
+description = "A lightweight Python CLI for passive web-security header and cookie checks on authorized targets."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.32.0",
+]
+
+[project.scripts]
+web-security-checker = "checker:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

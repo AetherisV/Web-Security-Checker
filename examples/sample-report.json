@@ -1,0 +1,60 @@
+{
+  "tool": "web-security-checker",
+  "checked_at": "2026-10-05T12:00:00Z",
+  "target": {
+    "input_url": "https://example.com",
+    "final_url": "https://example.com",
+    "status_code": 200,
+    "response_time_ms": 128
+  },
+  "http": {
+    "redirect_location": null,
+    "server": "nginx",
+    "x_powered_by": null
+  },
+  "security_headers": {
+    "Content-Security-Policy": {
+      "present": true,
+      "value": "default-src 'self'",
+      "description": "Controls which resources the browser may load and execute."
+    },
+    "Strict-Transport-Security": {
+      "present": true,
+      "value": "max-age=31536000; includeSubDomains",
+      "description": "Forces HTTPS and helps protect transport security over time."
+    },
+    "X-Frame-Options": {
+      "present": true,
+      "value": "DENY",
+      "description": "Prevents the page from being embedded in a frame or iframe."
+    },
+    "X-Content-Type-Options": {
+      "present": true,
+      "value": "nosniff",
+      "description": "Prevents browsers from MIME-sniffing a response away from the declared type."
+    },
+    "Referrer-Policy": {
+      "present": true,
+      "value": "strict-origin-when-cross-origin",
+      "description": "Controls how much referrer information is exposed to other origins."
+    },
+    "Permissions-Policy": {
+      "present": false,
+      "value": null,
+      "description": "Restricts browser features and APIs that a page can use."
+    }
+  },
+  "cookies": [
+    {
+      "name": "sessionid",
+      "value": "abc123",
+      "secure": true,
+      "http_only": true,
+      "same_site": "Lax",
+      "notes": "Cookie attributes observed from the Set-Cookie response header when present; browser enforcement cannot always be inferred reliably from a single passive response."
+    }
+  ],
+  "notes": [
+    "Authorization reminder: only inspect targets you own or are explicitly authorized to test."
+  ]
+}
