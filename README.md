@@ -8,7 +8,7 @@ This tool is a lightweight, passive inspection utility for a single HTTP GET req
 
 ## What it checks
 
-Version 1 checks exactly these six headers and no others:
+The checker reports exactly these six headers and no others:
 
 - Content-Security-Policy
 - Strict-Transport-Security
@@ -17,7 +17,7 @@ Version 1 checks exactly these six headers and no others:
 - Referrer-Policy
 - Permissions-Policy
 
-It also records cookie attributes for Secure, HttpOnly, and SameSite when they are present in the response headers.
+It also records the observed cookie name and Secure, HttpOnly, and SameSite attributes from the response's `Set-Cookie` fields. Missing Secure or HttpOnly flags are reported as `false`; SameSite is `null` when omitted or not reliably parseable. Repeated `Set-Cookie` fields are read from the existing response, without another request.
 
 ## Installation
 
@@ -36,14 +36,18 @@ pip install -r requirements.txt
 ```bash
 web-security-checker https://example.com
 web-security-checker https://example.com --output report.json
+web-security-checker https://example.com --html-output report.html
 web-security-checker https://example.com --timeout 15
 web-security-checker https://example.com --follow-redirects
 web-security-checker https://example.com --verbose
+web-security-checker --version
 ```
 
 ### Command options
 
 - `--output FILE`: write the JSON report to a file while still printing JSON to stdout.
+- `--html-output FILE`: write a self-contained HTML rendering of that same in-memory JSON report. HTML is generated locally and does not make another request; JSON remains the primary output and is still printed to stdout.
+- `--version`: print the installed project version and exit without making a request.
 - `--timeout SECONDS`: set the HTTP timeout in seconds (default: 10).
 - `--follow-redirects`: follow redirects during the request flow.
 - `--verbose`: include additional informational notes in the JSON report.
@@ -121,17 +125,17 @@ See [examples/sample-report.json](examples/sample-report.json) for a representat
 ## Limitations
 
 - This is a passive, single-request inspection tool.
+- Each run makes one normal HTTP GET; redirects are followed only when `--follow-redirects` is supplied.
+- Certificate expiry is not included because checking it would require an additional TLS connection, which is outside this project's one-normal-GET design.
 - It does not crawl, enumerate subdomains, scan ports, or test for vulnerabilities.
 - It does not infer browser enforcement beyond what is exposed in the response headers.
-- Cookie attributes may be absent or not reliably observable in some deployments and may require a browser context to confirm.
+- Cookie attribute reporting reflects the observed `Set-Cookie` fields; browser enforcement cannot be confirmed from this single passive response.
 - It is not a full vulnerability scanner and should not be used as a security verdict tool.
 
 ## Roadmap
 
-- Improve JSON output readability and portability.
-- Add clearer notes for missing or contextual headers.
-- Expand documentation and examples for common deployment patterns.
-- Keep the tool focused on authorized, passive inspection.
+- Continue improving test coverage and report clarity while preserving the single-GET design.
+- Keep the tool focused on authorized, passive inspection; deeper TLS checks and active scanning remain out of scope.
 
 ## Ethical use
 

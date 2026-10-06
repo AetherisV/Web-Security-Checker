@@ -12,7 +12,9 @@ from typing import Optional
 
 import requests
 
+from websec import __version__
 from websec.client import fetch_url
+from websec.html_report import render_html_report
 from websec.report import build_report
 from websec.validators import normalize_target_url
 
@@ -20,6 +22,11 @@ from websec.validators import normalize_target_url
 def _write_output(path: str, payload: dict) -> None:
     output_path = Path(path)
     output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def _write_html_output(path: str, payload: dict) -> None:
+    output_path = Path(path)
+    output_path.write_text(render_html_report(payload), encoding="utf-8")
 
 
 def _build_error_report(input_url: str, message: str, *, final_url: Optional[str] = None) -> dict:
@@ -40,8 +47,10 @@ def _build_error_report(input_url: str, message: str, *, final_url: Optional[str
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Passive web-security header and cookie inspection for authorized targets.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("url", help="Target URL to inspect.")
     parser.add_argument("--output", help="Write the JSON report to a file.")
+    parser.add_argument("--html-output", metavar="FILE", help="Write a local HTML version of the JSON report.")
     parser.add_argument("--timeout", type=float, default=10.0, help="HTTP timeout in seconds (default: 10).")
     parser.add_argument("--follow-redirects", action="store_true", help="Follow HTTP redirects during the single request flow.")
     parser.add_argument("--verbose", action="store_true", help="Add extra informational notes to the JSON report.")
@@ -86,6 +95,7 @@ def main() -> int:
             response_headers=dict(response.headers),
             redirect_location=redirect_location,
             notes=notes,
+            cookie_headers=response.raw.headers,
         )
     except (requests.exceptions.RequestException, ValueError, OSError) as exc:
         report = _build_error_report(normalized_url, str(exc), final_url=normalized_url)
@@ -98,6 +108,12 @@ def main() -> int:
             _write_output(args.output, report)
         except OSError as write_error:
             print(f"Failed to write output file: {write_error}", file=sys.stderr)
+
+    if args.html_output:
+        try:
+            _write_html_output(args.html_output, report)
+        except OSError as write_error:
+            print(f"Failed to write HTML output file: {write_error}", file=sys.stderr)
 
     print(json.dumps(report, indent=2))
     return 0 if report["target"]["status_code"] is not None else 1
