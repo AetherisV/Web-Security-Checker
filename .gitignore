@@ -11,3 +11,7 @@ htmlcov/
 .DS_Store
 report.json
 report.html
+
+# Local generated reports
+/comparison.json
+/comparison.html

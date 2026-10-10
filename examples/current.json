@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "tool": {
+    "name": "web-security-checker",
+    "version": "1.0.0"
+  },
+  "target": {
+    "input_url": "https://app.example.test",
+    "final_url": "https://app.example.test/",
+    "status_code": 200,
+    "response_time_ms": 118
+  },
+  "security_headers": {
+    "strict-transport-security": {
+      "present": true,
+      "value": "max-age=3600",
+      "observations": {
+        "max_age": 3600,
+        "include_subdomains": false,
+        "preload": false
+      }
+    },
+    "referrer-policy": {
+      "present": true,
+      "value": "unsafe-url",
+      "observations": {
+        "recognized_values": [
+          "unsafe-url"
+        ]
+      }
+    }
+  },
+  "cookies": [
+    {
+      "name": "session",
+      "secure": false,
+      "http_only": true,
+      "same_site": null
+    }
+  ]
+}

@@ -62,14 +62,86 @@ def test_cli_writes_json_and_html_from_one_mocked_response(tmp_path, monkeypatch
     monkeypatch.setattr(
         sys,
         "argv",
-        ["checker.py", "https://example.test", "--output", str(json_path), "--html-output", str(html_path)],
+        [
+            "checker.py",
+            "inspect",
+            "https://example.test",
+            "--output",
+            str(json_path),
+            "--html-output",
+            str(html_path),
+        ],
     )
 
     assert checker.main() == 0
-    stdout_report = json.loads(capsys.readouterr().out)
+    stdout = capsys.readouterr().out
     file_report = json.loads(json_path.read_text(encoding="utf-8"))
 
     assert calls == [("https://example.test", 10.0, False)]
-    assert stdout_report == file_report
-    assert stdout_report["cookies"][0]["same_site"] == "Lax"
-    assert "Web Security Checker report" in html_path.read_text(encoding="utf-8")
+    assert "Inspection complete: https://example.test/" in stdout
+    assert file_report["cookies"][0]["same_site"] == "Lax"
+    assert "Web Security Inspection Report" in html_path.read_text(encoding="utf-8")
+
+
+def test_check_returns_policy_mismatch_when_requested(tmp_path, monkeypatch, capsys):
+    policy_path = tmp_path / "policy.json"
+    policy_path.write_text(
+        json.dumps({"headers": {"x-content-type-options": {"required": True}}}),
+        encoding="utf-8",
+    )
+    report = {
+        "target": {"final_url": "https://example.test/"},
+        "security_headers": {},
+        "cookies": [],
+    }
+    monkeypatch.setattr(checker, "_inspect_report", lambda args: report)
+
+    exit_code = checker.run(
+        [
+            "check",
+            "https://example.test",
+            "--policy",
+            str(policy_path),
+            "--fail-on-policy-mismatch",
+        ]
+    )
+
+    assert exit_code == checker.EXIT_POLICY_MISMATCH
+    assert (
+        'Required header "x-content-type-options" was not observed.'
+        in capsys.readouterr().out
+    )
+
+
+def test_check_returns_success_for_policy_mismatch_without_fail_flag(
+    tmp_path, monkeypatch
+):
+    policy_path = tmp_path / "policy.json"
+    policy_path.write_text(
+        json.dumps({"headers": {"x-content-type-options": {"required": True}}}),
+        encoding="utf-8",
+    )
+    report = {
+        "target": {"final_url": "https://example.test/"},
+        "security_headers": {},
+        "cookies": [],
+    }
+    monkeypatch.setattr(checker, "_inspect_report", lambda args: report)
+
+    exit_code = checker.run(
+        ["check", "https://example.test", "--policy", str(policy_path)]
+    )
+
+    assert exit_code == checker.EXIT_SUCCESS
+
+
+def test_compare_returns_error_for_invalid_json(tmp_path, capsys):
+    invalid_path = tmp_path / "invalid.json"
+    invalid_path.write_text("{invalid json", encoding="utf-8")
+
+    exit_code = checker.run(
+        ["compare", str(invalid_path), str(invalid_path)]
+    )
+
+    assert exit_code == checker.EXIT_ERROR
+    assert "Error:" in capsys.readouterr().err

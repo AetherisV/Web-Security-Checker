@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "tool": {
+    "name": "web-security-checker",
+    "version": "1.0.0"
+  },
+  "target": {
+    "input_url": "https://app.example.test",
+    "final_url": "https://app.example.test/",
+    "status_code": 200,
+    "response_time_ms": 120
+  },
+  "security_headers": {
+    "strict-transport-security": {
+      "present": true,
+      "value": "max-age=31536000; includeSubDomains",
+      "observations": {
+        "max_age": 31536000,
+        "include_subdomains": true,
+        "preload": false
+      }
+    },
+    "x-content-type-options": {
+      "present": true,
+      "value": "nosniff",
+      "observations": {
+        "is_nosniff": true
+      }
+    },
+    "referrer-policy": {
+      "present": true,
+      "value": "strict-origin-when-cross-origin",
+      "observations": {
+        "recognized_values": [
+          "strict-origin-when-cross-origin"
+        ]
+      }
+    }
+  },
+  "cookies": [
+    {
+      "name": "session",
+      "secure": true,
+      "http_only": true,
+      "same_site": "Lax"
+    }
+  ]
+}
