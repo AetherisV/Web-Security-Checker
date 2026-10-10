@@ -39,7 +39,7 @@ def compare_reports(baseline: dict[str, Any], current: dict[str, Any]) -> dict[s
     current_cookies = _cookies_by_name(current)
     cookie_names = sorted(set(baseline_cookies) | set(current_cookies))
     cookies = {"added": [], "removed": [], "changed": []}
-    attributes = ("secure", "httponly", "samesite")
+    attributes = ("secure", "http_only", "same_site")
 
     for name in cookie_names:
         before = baseline_cookies.get(name)

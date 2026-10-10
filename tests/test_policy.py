@@ -26,7 +26,7 @@ def test_policy_matches_expected_configuration():
             "x-content-type-options": header("nosniff"),
             "referrer-policy": header("no-referrer"),
         },
-        cookies=[{"name": "session", "secure": True, "httponly": True, "samesite": "Lax"}],
+        cookies=[{"name": "session", "secure": True, "http_only": True, "same_site": "Lax"}],
     )
     policy = {
         "policy_version": "1.0",
@@ -62,7 +62,7 @@ def test_policy_reports_missing_and_non_matching_values():
             ),
             "referrer-policy": header("unsafe-url"),
         },
-        cookies=[{"name": "session", "secure": False, "httponly": False, "samesite": None}],
+        cookies=[{"name": "session", "secure": False, "http_only": False, "same_site": None}],
     )
     policy = {
         "headers": {

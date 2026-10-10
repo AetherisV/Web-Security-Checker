@@ -41,8 +41,8 @@
     {
       "name": "session",
       "secure": true,
-      "httponly": true,
-      "samesite": "Lax"
+      "http_only": true,
+      "same_site": "Lax"
     }
   ]
 }

@@ -92,7 +92,7 @@ def evaluate_policy(report: dict[str, Any], policy: dict[str, Any]) -> dict[str,
 
         for attribute, rule_name, label in (
             ("secure", "require_secure", "Secure"),
-            ("httponly", "require_httponly", "HttpOnly"),
+            ("http_only", "require_httponly", "HttpOnly"),
         ):
             if cookie_rules.get(rule_name) and not cookie.get(attribute, False):
                 mismatches.append(
@@ -102,7 +102,7 @@ def evaluate_policy(report: dict[str, Any], policy: dict[str, Any]) -> dict[str,
                     )
                 )
 
-        if cookie_rules.get("require_samesite") and not cookie.get("samesite"):
+        if cookie_rules.get("require_samesite") and not cookie.get("same_site"):
             mismatches.append(
                 _mismatch(
                     "cookie",

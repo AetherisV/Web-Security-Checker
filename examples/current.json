@@ -34,8 +34,8 @@
     {
       "name": "session",
       "secure": false,
-      "httponly": true,
-      "samesite": null
+      "http_only": true,
+      "same_site": null
     }
   ]
 }

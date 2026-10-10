@@ -47,12 +47,12 @@ def test_compare_reports_identifies_header_changes():
 def test_compare_reports_identifies_cookie_attribute_changes():
     baseline = report(
         cookies=[
-            {"name": "session", "secure": True, "httponly": True, "samesite": "Lax"}
+            {"name": "session", "secure": True, "http_only": True, "same_site": "Lax"}
         ]
     )
     current = report(
         cookies=[
-            {"name": "session", "secure": False, "httponly": True, "samesite": None}
+            {"name": "session", "secure": False, "http_only": True, "same_site": None}
         ]
     )
 
@@ -63,7 +63,7 @@ def test_compare_reports_identifies_cookie_attribute_changes():
             "name": "session",
             "attributes": {
                 "secure": {"baseline": True, "current": False},
-                "samesite": {"baseline": "Lax", "current": None},
+                "same_site": {"baseline": "Lax", "current": None},
             },
         }
     ]
@@ -72,7 +72,7 @@ def test_compare_reports_identifies_cookie_attribute_changes():
 def test_compare_reports_has_no_changes_for_equal_reports():
     source = report(
         headers={"x-content-type-options": header("nosniff")},
-        cookies=[{"name": "session", "secure": True, "httponly": True, "samesite": "Lax"}],
+        cookies=[{"name": "session", "secure": True, "http_only": True, "same_site": "Lax"}],
     )
 
     result = compare_reports(source, source)
