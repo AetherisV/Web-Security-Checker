@@ -1,0 +1,29 @@
+{
+  "policy_version": "1.0",
+  "headers": {
+    "strict-transport-security": {
+      "required": true,
+      "min_max_age": 31536000,
+      "require_include_subdomains": true
+    },
+    "x-content-type-options": {
+      "required": true,
+      "expected_value": "nosniff"
+    },
+    "referrer-policy": {
+      "required": true,
+      "allowed_values": [
+        "strict-origin-when-cross-origin",
+        "no-referrer"
+      ]
+    }
+  },
+  "cookies": {
+    "session_cookie_names": [
+      "session"
+    ],
+    "require_secure": true,
+    "require_httponly": true,
+    "require_samesite": true
+  }
+}
