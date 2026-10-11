@@ -1,30 +1,55 @@
 # Web Security Checker
 
-A lightweight, ethical Python CLI for inspecting common web-security headers and cookie attributes on authorized targets.
+A lightweight Python CLI for **passive inspection** of common web-security headers and cookie attributes on authorized targets.
 
-Authorization reminder: Only inspect targets you own or are explicitly authorized to test.
+> **Authorization reminder:** Only inspect websites and systems that you own or are explicitly authorized to test.
 
-This tool is a lightweight, passive inspection utility for a single HTTP GET request to a supplied URL. It reports the state of six common security headers and the cookie attributes that can be observed from the response headers, without claiming a full vulnerability verdict.
+Web Security Checker makes one normal HTTP GET request to a supplied URL and reports observable response security configuration. It can also compare saved reports to identify configuration drift and evaluate a live inspection against a JSON security policy.
+
+It is designed for security visibility and regression checking—not for exploitation, penetration testing, or a complete vulnerability verdict.
+
+## Features
+
+- Passive inspection of six common HTTP security headers
+- Cookie attribute reporting for observed `Set-Cookie` response headers
+- JSON output for automation and archival
+- Self-contained HTML reports for review and sharing
+- Offline baseline-versus-current report comparison
+- JSON policy evaluation for authorized URLs
+- Optional nonzero exit status when policy requirements do not match
+- Automated tests and GitHub Actions CI
 
 ## What it checks
 
-The checker reports exactly these six headers and no others:
+The inspector reports exactly these six headers:
 
-- Content-Security-Policy
-- Strict-Transport-Security
-- X-Frame-Options
-- X-Content-Type-Options
-- Referrer-Policy
-- Permissions-Policy
+- `Content-Security-Policy`
+- `Strict-Transport-Security`
+- `X-Frame-Options`
+- `X-Content-Type-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
 
-It also records the observed cookie name and Secure, HttpOnly, and SameSite attributes from the response's `Set-Cookie` fields. Missing Secure or HttpOnly flags are reported as `false`; SameSite is `null` when omitted or not reliably parseable. Repeated `Set-Cookie` fields are read from the existing response, without another request.
+It also records observable cookie information from `Set-Cookie` response headers:
+
+- Cookie name
+- `Secure`
+- `HttpOnly`
+- `SameSite`
+
+Missing `Secure` or `HttpOnly` flags are reported as `false`. `SameSite` is reported as `null` when it is absent or cannot be reliably parsed from the observed response. Repeated `Set-Cookie` fields are read from the same response without triggering another request.
 
 ## Installation
 
 ```bash
+git clone https://github.com/AetherisV/Web-Security-Checker.git
+cd Web-Security-Checker
+
 python -m venv .venv
+
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
+
 # Linux / macOS
 # source .venv/bin/activate
 
@@ -33,112 +58,28 @@ pip install -r requirements.txt
 
 ## Usage
 
-```bash
-web-security-checker https://example.com
-web-security-checker https://example.com --output report.json
-web-security-checker https://example.com --html-output report.html
-web-security-checker https://example.com --timeout 15
-web-security-checker https://example.com --follow-redirects
-web-security-checker https://example.com --verbose
-web-security-checker --version
-```
-
-### Command options
-
-- `--output FILE`: write the JSON report to a file while still printing JSON to stdout.
-- `--html-output FILE`: write a self-contained HTML rendering of that same in-memory JSON report. HTML is generated locally and does not make another request; JSON remains the primary output and is still printed to stdout.
-- `--version`: print the installed project version and exit without making a request.
-- `--timeout SECONDS`: set the HTTP timeout in seconds (default: 10).
-- `--follow-redirects`: follow redirects during the request flow.
-- `--verbose`: include additional informational notes in the JSON report.
-
-## Terminal example
+The CLI provides three commands:
 
 ```bash
-$ web-security-checker https://example.com
-{
-  "tool": "web-security-checker",
-  "checked_at": "2026-10-05T12:00:00Z",
-  "target": {
-    "input_url": "https://example.com",
-    "final_url": "https://example.com",
-    "status_code": 200,
-    "response_time_ms": 128
-  },
-  "http": {
-    "redirect_location": null,
-    "server": "nginx",
-    "x_powered_by": null
-  },
-  "security_headers": {
-    "Content-Security-Policy": {
-      "present": true,
-      "value": "default-src 'self'",
-      "description": "Controls which resources the browser may load and execute."
-    },
-    "Strict-Transport-Security": {
-      "present": false,
-      "value": null,
-      "description": "Forces HTTPS and helps protect transport security over time."
-    },
-    "X-Frame-Options": {
-      "present": true,
-      "value": "DENY",
-      "description": "Prevents the page from being embedded in a frame or iframe."
-    },
-    "X-Content-Type-Options": {
-      "present": true,
-      "value": "nosniff",
-      "description": "Prevents browsers from MIME-sniffing a response away from the declared type."
-    },
-    "Referrer-Policy": {
-      "present": true,
-      "value": "strict-origin-when-cross-origin",
-      "description": "Controls how much referrer information is exposed to other origins."
-    },
-    "Permissions-Policy": {
-      "present": false,
-      "value": null,
-      "description": "Restricts browser features and APIs that a page can use."
-    }
-  },
-  "cookies": [
-    {
-      "name": "sessionid",
-      "value": "abc123",
-      "secure": true,
-      "http_only": true,
-      "same_site": "Lax",
-      "notes": "Cookie attributes observed from the Set-Cookie response header when present; browser enforcement cannot always be inferred reliably from a single passive response."
-    }
-  ],
-  "notes": [
-    "Authorization reminder: only inspect targets you own or are explicitly authorized to test."
-  ]
-}
+python checker.py inspect URL
+python checker.py compare BASELINE_REPORT CURRENT_REPORT
+python checker.py check URL --policy POLICY_FILE
 ```
 
-## JSON example
+### Inspect an authorized URL
 
-See [examples/sample-report.json](examples/sample-report.json) for a representative report.
+```bash
+python checker.py inspect https://example.com
+python checker.py inspect https://example.com --output report.json
+python checker.py inspect https://example.com --html-output report.html
+python checker.py inspect https://example.com --timeout 15
+python checker.py inspect https://example.com --follow-redirects
+```
 
-## Limitations
+### Compare saved reports
 
-- This is a passive, single-request inspection tool.
-- Each run makes one normal HTTP GET; redirects are followed only when `--follow-redirects` is supplied.
-- Certificate expiry is not included because checking it would require an additional TLS connection, which is outside this project's one-normal-GET design.
-- It does not crawl, enumerate subdomains, scan ports, or test for vulnerabilities.
-- It does not infer browser enforcement beyond what is exposed in the response headers.
-- Cookie attribute reporting reflects the observed `Set-Cookie` fields; browser enforcement cannot be confirmed from this single passive response.
-- It is not a full vulnerability scanner and should not be used as a security verdict tool.
+Comparison runs offline against two existing JSON reports. It does not make a network request.
 
-## Roadmap
-
-- Continue improving test coverage and report clarity while preserving the single-GET design.
-- Keep the tool focused on authorized, passive inspection; deeper TLS checks and active scanning remain out of scope.
-
-## Ethical use
-
-This project is intended for authorized testing only. Use it on systems that you own or operate, or on systems where you have explicit written permission to evaluate them.
-
-This tool is not a full vulnerability scanner and is meant for passive header and cookie inspection only.
+```bash
+python checker.py compare examples/baseline.json examples/current.json
+python checker.py compare examples/baseline.json exam
