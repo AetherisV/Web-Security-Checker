@@ -82,4 +82,3 @@ Comparison runs offline against two existing JSON reports. It does not make a ne
 
 ```bash
 python checker.py compare examples/baseline.json examples/current.json
-python checker.py compare examples/baseline.json exam
